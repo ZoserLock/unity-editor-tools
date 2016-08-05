@@ -28,12 +28,12 @@ public class DynamicVerticalScrollView
 
     public void RenderList<T>(List<T> elements,System.Action<T,int> callback)
     {
-        if(callback == null || elements.Count==0 || _editor == null)
+        if(callback == null || elements.Count == 0 || _editor == null)
         {
             return;
         }
 
-        _scrollSize = EditorGUILayout.BeginScrollView(_scrollSize);
+        _scrollSize = EditorGUILayout.BeginScrollView(_scrollSize,GUILayout.ExpandHeight(false));
 
         if (Event.current.type == EventType.Layout)
         {
@@ -49,13 +49,14 @@ public class DynamicVerticalScrollView
             _visibleItems = Mathf.CeilToInt(_visibleHeight / (float)_elementSize);
 
             _firstVisibleItem = Mathf.FloorToInt(_scrollSize.y / (float)_elementSize);
-            _lastVisibleItem = Mathf.Min(elements.Count, _firstVisibleItem + _visibleItems);
-
-            _firstVisibleItem = Mathf.Min(_firstVisibleItem, _lastVisibleItem - _visibleItems);
+            _lastVisibleItem  = Mathf.Clamp(Mathf.Min(elements.Count, _firstVisibleItem + _visibleItems), 0, elements.Count);
+            _firstVisibleItem = Mathf.Clamp(Mathf.Min(_firstVisibleItem, _lastVisibleItem - _visibleItems), 0, elements.Count);
 
             _startSpace = _firstVisibleItem * _elementSize;
             _endSpace = (elements.Count - _lastVisibleItem) * _elementSize;
         }
+
+     //   Debug.LogWarning("_visibleItems " + _visibleItems + " : " + _firstVisibleItem + " : " + _lastVisibleItem + " : " + _startSpace + " :: " + _endSpace);
 
         GUILayout.Space(_startSpace);
 

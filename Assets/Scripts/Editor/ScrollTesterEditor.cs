@@ -23,7 +23,7 @@ public class ScrollTesterEditor : Editor
         _buttonNames.Clear();
         for (int a = 0 ;a< 5000 ;++a)
         {
-            _buttonNames.Add("Button: "+a);
+            _buttonNames.Add("Element: "+a);
         }
     }
 
@@ -44,7 +44,7 @@ public class ScrollTesterEditor : Editor
         }
         else
         {
-            GUI.color = Color.red;
+            GUI.color = Color.red; 
             if (GUILayout.Button("Toggle Scroll System [DISABLED]"))
             {
                 _scrollSystemActivated = !_scrollSystemActivated;
@@ -53,6 +53,14 @@ public class ScrollTesterEditor : Editor
 
         GUI.color = old;
 
+        old = GUI.color;
+         
+   
+        if (GUILayout.Button("Add element"))
+        {
+            _buttonNames.Add("Dynamic Element");
+        }
+        GUILayout.BeginVertical("HelpBox");
         if (_scrollSystemActivated)
         {
             _dynamicVerticalScrollView.RenderList(_buttonNames, (element, index) =>
@@ -65,7 +73,7 @@ public class ScrollTesterEditor : Editor
         }
         else
         {
-            _scrollSize = EditorGUILayout.BeginScrollView(_scrollSize);
+            _scrollSize = EditorGUILayout.BeginScrollView(_scrollSize,GUILayout.ExpandHeight(false));
 
             for (int a = 0; a < _buttonNames.Count; ++a)
             {
@@ -76,5 +84,7 @@ public class ScrollTesterEditor : Editor
             }
             EditorGUILayout.EndScrollView();
         }
+        GUILayout.EndVertical();
+        GUI.color = old;
     }
 }
