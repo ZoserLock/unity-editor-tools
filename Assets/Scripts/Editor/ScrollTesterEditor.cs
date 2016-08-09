@@ -7,26 +7,24 @@ using System.Collections.Generic;
 [CustomEditor(typeof(ScrollTester))]
 public class ScrollTesterEditor : Editor
 {
-
     Vector2 _scrollSize;
 
-    List<string> _buttonNames = new List<string>();
+    List<TestElement> _buttonNames = new List<TestElement>();
+
+    TestElement _selected = null;
 
     bool _scrollSystemActivated = true;
 
-    DynamicVerticalScrollView _dynamicVerticalScrollView;
+    DynamicScrollData _scrollData = new DynamicScrollData();
 
     void OnEnable()
     {
-        _dynamicVerticalScrollView = new DynamicVerticalScrollView(this);
-
         _buttonNames.Clear();
-        for (int a = 0 ;a< 5000 ;++a)
+        for (int a = 0 ;a< 10000 ;++a)
         {
-            _buttonNames.Add("Element: "+a);
+            _buttonNames.Add(new TestElement("Element: "+a));
         }
     }
-
 
     public override void OnInspectorGUI()
     {
@@ -58,17 +56,36 @@ public class ScrollTesterEditor : Editor
    
         if (GUILayout.Button("Add element"))
         {
-            _buttonNames.Add("Dynamic Element");
+            _buttonNames.Add(new TestElement("Dynamic Element"));
         }
         GUILayout.BeginVertical("HelpBox");
         if (_scrollSystemActivated)
         {
-            _dynamicVerticalScrollView.RenderList(_buttonNames, (element, index) =>
+            EditorTools.DynamicScroll(this,_scrollData, _buttonNames,20, (element, index) =>
             {
-                GUILayout.BeginHorizontal();
-                GUILayout.Button(element);
-                GUILayout.Button("X",GUILayout.ExpandWidth(false));
-                GUILayout.EndVertical();
+                if(_selected == element)
+                {
+                    GUILayout.BeginVertical("HelpBox");
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Button(element.text);
+                    if (GUILayout.Button("X", GUILayout.ExpandWidth(false)))
+                    {
+                        _selected = null;
+                    }
+                    GUILayout.EndHorizontal();
+                    GUILayout.Space(100);
+                    GUILayout.EndVertical();
+                }else
+                {
+                    GUILayout.BeginHorizontal("HelpBox");
+                    GUILayout.Button(element.text);
+                    if(GUILayout.Button("X", GUILayout.ExpandWidth(false)))
+                    {
+                        _selected = element;
+                    }
+                    GUILayout.EndHorizontal();
+                }
+           
             });
         }
         else
@@ -78,7 +95,7 @@ public class ScrollTesterEditor : Editor
             for (int a = 0; a < _buttonNames.Count; ++a)
             {
                 GUILayout.BeginHorizontal();
-                GUILayout.Button(_buttonNames[a]);
+                GUILayout.Button(_buttonNames[a].text);
                 GUILayout.Button("X", GUILayout.ExpandWidth(false));
                 GUILayout.EndVertical();
             }
