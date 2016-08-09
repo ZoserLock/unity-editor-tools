@@ -6,9 +6,23 @@ Script that extend the normal **GUILayout ScrollView**  and allow you display a 
 
 Tested with **500.000** elements.
 
+#### How To use
+```cs
+    EditorTools.DynamicScroll(Editor editor, DynamicScrollData scrollData, List<T> data, int minHeight, Action<T, int> callback);
+```
+* editor: The current Editor.
+* scrollData: The persistent data related to the scroll.
+* List<T> data: The elements to show.
+* minHeight: The height of the smallest element.
+* callback: The function that draw GUILayout elements. Parameters: the element and the index.
+
 #### Example code
 
 ```cs
+       // Declared scrollData in the editor class definiton
+       DynamicScrollData scrollData = new DynamicScrollData;
+
+       // OnInspectorGUI()
        EditorTools.DynamicScroll(this,scrollData, _objectList,minObjectHeight, (element, index) =>
        {
             // Your GUILayout commands goes here.
