@@ -8,13 +8,13 @@ Tested with **500.000** elements.
 
 #### How To use
 ```cs
-    EditorTools.DynamicScroll(Editor editor, DynamicScrollData scrollData, List<T> data, int minHeight, Action<T, int> callback);
+EditorTools.DynamicScroll(Editor, ScrollData, Elements, MinHeight, Callback);
 ```
-* editor: The current Editor.
-* scrollData: The persistent data related to the scroll.
-* List<T> data: The elements to show.
-* minHeight: The height of the smallest element.
-* callback: The function that draw GUILayout elements. Parameters: the element and the index.
+* Editor: The current Editor.
+* ScrollData: The persistent data related to the scroll.
+* Elements: List<T> Of the elements to show.
+* MinHeight: The height of the smallest element.
+* Callback: Action<T, int> Function that draw GUILayout elements. Parameters: the element and the index.
 
 #### Example code
 

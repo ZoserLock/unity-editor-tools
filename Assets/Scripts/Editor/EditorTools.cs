@@ -6,17 +6,13 @@ using System.Collections.Generic;
 
 public class DynamicScrollData
 {
-    public Vector2 scrollSize;
-    public Rect scrollRect;
+    public Vector2  scrollSize;
+    public Rect     scrollRect;
+    public Rect     totalRect;
 
-    public int visibleHeight;
+    public int      elementCount = 0;
 
-    public int firstVisibleItem;
-    public int lastVisibleItem;
-
-    public int startSpace;
-    public int endSpace;
-
+    public float userScrollPosition = -1.0f;
 }
 
 public class EditorTools
@@ -29,37 +25,50 @@ public class EditorTools
         }
 
         data.scrollSize = EditorGUILayout.BeginScrollView(data.scrollSize, GUILayout.ExpandHeight(false));
+        GUILayout.BeginVertical();
+        int visibleHeight = Mathf.CeilToInt(data.scrollRect.height);
 
-        if (Event.current.type == EventType.Layout)
-        {
-            data.visibleHeight = Mathf.CeilToInt(data.scrollRect.height);
+        int visibleItems = Mathf.CeilToInt(visibleHeight / (float)minH);
 
-            if (data.visibleHeight == 0)
-            {
-                editor.Repaint();
-            }
+        int firstVisibleItem = Mathf.FloorToInt(data.scrollSize.y / (float)minH);
+        int lastVisibleItem = Mathf.Clamp(Mathf.Min(elements.Count, firstVisibleItem + visibleItems), 0, elements.Count);
 
-            int visibleItems = Mathf.CeilToInt(data.visibleHeight / (float)minH);
+        firstVisibleItem = Mathf.Clamp(Mathf.Min(firstVisibleItem, lastVisibleItem - visibleItems), 0, elements.Count);
 
-            data.firstVisibleItem = Mathf.FloorToInt(data.scrollSize.y / (float)minH);
-            data.lastVisibleItem = Mathf.Clamp(Mathf.Min(elements.Count, data.firstVisibleItem + visibleItems), 0, elements.Count);
-            data.firstVisibleItem = Mathf.Clamp(Mathf.Min(data.firstVisibleItem, data.lastVisibleItem - visibleItems), 0, elements.Count);
-
-            data.startSpace = data.firstVisibleItem * minH;
-            data.endSpace = (elements.Count - data.lastVisibleItem) * minH;
-        }
-
-        GUILayout.Space(data.startSpace);
-        for (int a = data.firstVisibleItem; a < data.lastVisibleItem; ++a)
+        int startSpace = firstVisibleItem * minH;
+        int endSpace = (elements.Count - lastVisibleItem) * minH;
+        
+        GUILayout.Space(startSpace);
+        for (int a = firstVisibleItem; a < lastVisibleItem; ++a)
         {
             callback(elements[a], a);
         }
 
-        GUILayout.Space(data.endSpace);
+        GUILayout.Space(endSpace);
+
+        GUILayout.EndVertical();
+        if (Event.current.type == EventType.Repaint)
+        {
+            data.totalRect = GUILayoutUtility.GetLastRect();
+        }
         EditorGUILayout.EndScrollView();
+
         if (Event.current.type == EventType.Repaint)
         {
             data.scrollRect = GUILayoutUtility.GetLastRect();
+
+            if (data.elementCount != elements.Count)
+            {
+                editor.Repaint();
+                data.elementCount = elements.Count;
+            }
+
+            if (data.userScrollPosition >= 0.0f)
+            {
+                editor.Repaint();
+                data.scrollSize.y = Mathf.FloorToInt(Mathf.Clamp01(data.userScrollPosition) * data.totalRect.height);
+                data.userScrollPosition = -1.0f;
+            }
         }
     }
 }
