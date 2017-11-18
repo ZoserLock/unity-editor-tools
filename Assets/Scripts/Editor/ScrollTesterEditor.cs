@@ -11,18 +11,20 @@ public class ScrollTesterEditor : Editor
 
     List<TestElement> _elementListA = new List<TestElement>();
     List<TestElement> _elementListB = new List<TestElement>();
+    List<TestElement> _currentList  = new List<TestElement>();
 
     TestElement _selected = null;
+    TestElement _removeNext = null;
 
     bool _scrollSystemActivated = true;
     bool _showListA = true;
 
-    DynamicScrollData _scrollData = new DynamicScrollData();
+    EditorGUITools.DynamicScrollData _scrollData = new EditorGUITools.DynamicScrollData();
 
     void OnEnable()
     {
         _elementListA.Clear();
-        for (int a = 0 ;a< 5000 ;++a)
+        for (int a = 0 ;a < 500000 ;++a)
         {
             _elementListA.Add(new TestElement("Element A: "+a));
         }
@@ -38,9 +40,42 @@ public class ScrollTesterEditor : Editor
     {
         base.OnInspectorGUI();
 
+        if (Event.current.type == EventType.Layout)
+        {
+            if (_showListA)
+            {
+                _currentList = _elementListA;
+            }
+            else
+            {
+                _currentList = _elementListB;
+            }
+
+            if (_removeNext != null)
+            {
+                _currentList.Remove(_removeNext);
+                _removeNext = null;
+            }
+        }
+
         Color old = GUI.color;
 
-        if(_scrollSystemActivated)
+        if (GUILayout.Button("Set Center"))
+        {
+            _scrollData.userScrollPosition = 0.5f;
+        }
+
+        if (GUILayout.Button("Set bellow"))
+        {
+            _scrollData.userScrollPosition = 1.0f;
+        }
+
+        if (GUILayout.Button("Set 0"))
+        {
+            _scrollData.userScrollPosition = 0;
+        }
+
+        if (_scrollSystemActivated)
         {
             GUI.color = Color.green;
             if (GUILayout.Button("Toggle Scroll System [ENABLED]"))
@@ -56,7 +91,7 @@ public class ScrollTesterEditor : Editor
                 _scrollSystemActivated = !_scrollSystemActivated;
             }
         }
-        GUI.color = Color.blue;
+        GUI.color = Color.grey;
         if (GUILayout.Button("Toggle List"))
         {
             _showListA = !_showListA;
@@ -68,47 +103,53 @@ public class ScrollTesterEditor : Editor
    
         if (GUILayout.Button("Add element"))
         {
-            _elementListA.Add(new TestElement("Dynamic Element"));
-            _selected = _elementListA[_elementListA.Count - 1];
-
-            _scrollData.userScrollPosition = 2.0f; 
-
+            _currentList.Add(new TestElement("Dynamic Element"));
+            _selected = _currentList[_currentList.Count - 1];
+            _scrollData.userScrollPosition = 1.0f; 
         }
+
         GUILayout.BeginVertical("HelpBox");
         if (_scrollSystemActivated)
         {
-            List<TestElement> currentList = null;
-
-            if(_showListA)
+            EditorGUITools.DynamicScroll(this,_scrollData, _currentList,
+            (element, index) =>
             {
-                currentList = _elementListA;
-            }
-            else
-            {
-                currentList = _elementListB;
-            }
+                if (_selected == element)
+                {
+                    return 128;
+                }
 
-            EditorTools.DynamicScroll(this,_scrollData, currentList, 20, (element, index) =>
+                return 28;
+            },
+            (element, index) =>
             {
                 if (_selected == element)
                 {
                     GUILayout.BeginVertical("HelpBox");
                     GUILayout.BeginHorizontal();
-                    GUILayout.Button(element.text);
-                    if (GUILayout.Button("X", GUILayout.ExpandWidth(false)))
+                    if (GUILayout.Button(element.text))
                     {
                         _selected = null;
+                    }
+                    if (GUILayout.Button("X", GUILayout.ExpandWidth(false)))
+                    {
+                        _removeNext = element;
                     }
                     GUILayout.EndHorizontal();
                     GUILayout.Space(100);
                     GUILayout.EndVertical();
-                }else
+             
+                }
+                else
                 {
                     GUILayout.BeginHorizontal("HelpBox");
-                    GUILayout.Button(element.text);
-                    if(GUILayout.Button("X", GUILayout.ExpandWidth(false)))
+                    if (GUILayout.Button(element.text))
                     {
                         _selected = element;
+                    }
+                    if(GUILayout.Button("X", GUILayout.ExpandWidth(false)))
+                    {
+                        _removeNext = element;
                     }
                     GUILayout.EndHorizontal();
                 }
@@ -129,6 +170,21 @@ public class ScrollTesterEditor : Editor
             EditorGUILayout.EndScrollView();
         }
         GUILayout.EndVertical();
+
+        if (GUILayout.Button("Set Center"))
+        {
+            _scrollData.userScrollPosition = 0.5f;
+        }
+
+        if (GUILayout.Button("Set bellow"))
+        {
+            _scrollData.userScrollPosition = 1.0f;
+        }
+
+        if (GUILayout.Button("Set 0"))
+        {
+            _scrollData.userScrollPosition = 0;
+        }
         GUI.color = old;
     }
 }
